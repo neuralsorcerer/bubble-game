@@ -4,6 +4,7 @@ import StartScreen from "./components/StartScreen";
 import GameOverScreen from "./components/GameOverScreen";
 import Header from "./components/Header";
 import BubbleGrid from "./components/BubbleGrid";
+import { Analytics } from "@vercel/analytics/react";
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<"start" | "playing" | "gameover">(
@@ -131,6 +132,7 @@ const App: React.FC = () => {
           restartGame={() => setGameState("start")}
         />
       )}
+      <Analytics />
     </div>
   );
 };
