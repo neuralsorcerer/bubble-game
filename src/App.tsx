@@ -20,6 +20,7 @@ const App: React.FC = () => {
   const [highScore, setHighScore] = useState<number>(
     parseInt(localStorage.getItem("highScore") || "0")
   );
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const timerRef = useRef<number | null>(null);
 
   const [playCorrect] = useSound("/sounds/correct.mp3", { volume: 0.5 });
@@ -90,8 +91,15 @@ const App: React.FC = () => {
     }
   }, [timer]);
 
+  useEffect(() => {
+    if (gameState === "playing" && score >= 2000 && !isDarkMode) {
+      setIsDarkMode(true);
+    }
+  }, [score, isDarkMode, gameState]);
+
   const startGame = () => {
     setScore(0);
+    setIsDarkMode(false);
     setTimer(difficulty === "easy" ? 60 : difficulty === "medium" ? 30 : 10);
     setGameState("playing");
   };
@@ -107,6 +115,8 @@ const App: React.FC = () => {
 
   const exitGame = () => {
     setGameState("start");
+    setScore(0);
+    setIsDarkMode(false);
     if (timerRef.current !== null) {
       clearInterval(timerRef.current);
       timerRef.current = null;
@@ -137,7 +147,13 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-200 to-blue-300">
+    <div
+      className={`flex items-center justify-center min-h-screen ${
+        isDarkMode
+          ? "bg-gray-900"
+          : "bg-gradient-to-br from-green-200 to-blue-300"
+      }`}
+    >
       {gameState === "start" && (
         <StartScreen
           difficulty={difficulty}
@@ -148,7 +164,11 @@ const App: React.FC = () => {
       )}
 
       {gameState === "playing" && (
-        <div className="w-11/12 md:w-4/5 h-full md:h-4/5 bg-white rounded-lg overflow-hidden shadow-lg flex flex-col">
+        <div
+          className={`w-11/12 md:w-4/5 h-full md:h-4/5 ${
+            isDarkMode ? "bg-gray-800" : "bg-white"
+          } rounded-lg overflow-hidden shadow-lg flex flex-col`}
+        >
           <Header
             hitNumber={hitNumber}
             timer={timer}
