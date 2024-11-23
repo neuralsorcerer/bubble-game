@@ -13,11 +13,11 @@ const BubbleGrid: React.FC<BubbleGridProps> = ({
 }) => {
   let bgColorClass = "bg-green-500";
 
-  if (score > 1000) {
+  if (score > 30) {
     bgColorClass = "bg-pink-500";
-  } else if (score > 500) {
+  } else if (score > 20) {
     bgColorClass = "bg-purple-500";
-  } else if (score > 250) {
+  } else if (score > 10) {
     bgColorClass = "bg-teal-500";
   }
 

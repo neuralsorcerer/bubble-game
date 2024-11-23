@@ -18,13 +18,13 @@ const Header: React.FC<HeaderProps> = ({
   let bgColorClass = "bg-green-700";
   let textColorClass = "text-green-700";
 
-  if (score > 1000) {
+  if (score > 30) {
     bgColorClass = "bg-pink-700";
     textColorClass = "text-pink-500";
-  } else if (score > 500) {
+  } else if (score > 20) {
     bgColorClass = "bg-purple-700";
     textColorClass = "text-purple-500";
-  } else if (score > 250) {
+  } else if (score > 10) {
     bgColorClass = "bg-teal-700";
     textColorClass = "text-teal-500";
   }
