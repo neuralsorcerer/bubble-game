@@ -11,14 +11,14 @@ const BubbleGrid: React.FC<BubbleGridProps> = ({
   handleBubbleClick,
   score,
 }) => {
-  let bgColorClass = "bg-green-500";
+  let bubbleColor = "#38A169";
 
-  if (score > 30) {
-    bgColorClass = "bg-pink-500";
-  } else if (score > 20) {
-    bgColorClass = "bg-purple-500";
-  } else if (score > 10) {
-    bgColorClass = "bg-teal-500";
+  if (score > 1000) {
+    bubbleColor = "#D53F8C";
+  } else if (score > 500) {
+    bubbleColor = "#9F7AEA";
+  } else if (score > 250) {
+    bubbleColor = "#38B2AC";
   }
 
   return (
@@ -26,8 +26,9 @@ const BubbleGrid: React.FC<BubbleGridProps> = ({
       {bubbles.map((num, index) => (
         <div
           key={index}
-          className={`flex items-center justify-center w-12 h-12 md:w-14 md:h-14 ${bgColorClass} text-white rounded-full cursor-pointer hover:brightness-110 transform transition-all duration-200 hover:scale-110`}
+          className="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 text-white rounded-full cursor-pointer hover:brightness-110 transform hover:scale-110 transition-colors duration-500 ease-in-out"
           onClick={() => handleBubbleClick(num)}
+          style={{ backgroundColor: bubbleColor }}
         >
           {num}
         </div>
