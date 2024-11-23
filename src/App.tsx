@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import useSound from "use-sound";
 import StartScreen from "./components/StartScreen";
 import GameOverScreen from "./components/GameOverScreen";
@@ -25,16 +25,64 @@ const App: React.FC = () => {
   const [playCorrect] = useSound("/sounds/correct.mp3", { volume: 0.5 });
   const [playIncorrect] = useSound("/sounds/incorrect.mp3", { volume: 0.5 });
 
+  const generateNewHit = useCallback(() => {
+    const maxNumber =
+      difficulty === "easy" ? 10 : difficulty === "medium" ? 50 : 100;
+    const newHitNumber = Math.floor(Math.random() * maxNumber) + 1;
+    setHitNumber(newHitNumber);
+    return newHitNumber;
+  }, [difficulty]);
+
+  const generateBubbles = useCallback(
+    (currentHitNumber: number) => {
+      const bubbleCount =
+        difficulty === "easy" ? 100 : difficulty === "medium" ? 150 : 200;
+
+      const maxNumber =
+        difficulty === "easy" ? 10 : difficulty === "medium" ? 50 : 100;
+
+      const hitNumberPercentage =
+        difficulty === "easy" ? 0.2 : difficulty === "medium" ? 0.1 : 0.05;
+
+      const hitNumberCount = Math.floor(bubbleCount * hitNumberPercentage);
+
+      const hitNumbersArray = Array(hitNumberCount).fill(currentHitNumber);
+
+      const remainingCount = bubbleCount - hitNumberCount;
+
+      const remainingNumbers = Array.from({ length: remainingCount }, () => {
+        let num;
+        do {
+          num = Math.floor(Math.random() * maxNumber) + 1;
+        } while (num === currentHitNumber);
+        return num;
+      });
+
+      const combinedArray = [...hitNumbersArray, ...remainingNumbers];
+
+      for (let i = combinedArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [combinedArray[i], combinedArray[j]] = [
+          combinedArray[j],
+          combinedArray[i],
+        ];
+      }
+
+      setBubbles(combinedArray);
+    },
+    [difficulty]
+  );
+
   useEffect(() => {
     if (gameState === "playing") {
-      generateNewHit();
-      generateBubbles();
+      const newHitNumber = generateNewHit();
+      generateBubbles(newHitNumber);
       startTimer();
     }
     return () => {
       if (timerRef.current !== null) clearInterval(timerRef.current);
     };
-  }, [gameState]);
+  }, [gameState, generateNewHit, generateBubbles]);
 
   useEffect(() => {
     if (timer === 0) {
@@ -65,19 +113,6 @@ const App: React.FC = () => {
     }
   };
 
-  const generateNewHit = () => {
-    setHitNumber(Math.floor(Math.random() * 10));
-  };
-
-  const generateBubbles = () => {
-    const bubbleCount =
-      difficulty === "easy" ? 100 : difficulty === "medium" ? 168 : 200;
-    const nums = Array.from({ length: bubbleCount }, () =>
-      Math.floor(Math.random() * 10)
-    );
-    setBubbles(nums);
-  };
-
   const startTimer = () => {
     timerRef.current = window.setInterval(() => {
       setTimer((prev) => {
@@ -91,10 +126,10 @@ const App: React.FC = () => {
   const handleBubbleClick = (num: number) => {
     if (num === hitNumber) {
       playCorrect();
-      setScore(score + 10);
+      setScore((prevScore) => prevScore + 10);
       setTimer((prev) => prev + 2);
-      generateNewHit();
-      generateBubbles();
+      const newHitNumber = generateNewHit();
+      generateBubbles(newHitNumber);
     } else {
       playIncorrect();
       setScore((prev) => (prev >= 5 ? prev - 5 : 0));
@@ -121,7 +156,11 @@ const App: React.FC = () => {
             exitGame={exitGame}
             startGame={startGame}
           />
-          <BubbleGrid bubbles={bubbles} handleBubbleClick={handleBubbleClick} />
+          <BubbleGrid
+            bubbles={bubbles}
+            handleBubbleClick={handleBubbleClick}
+            score={score}
+          />
         </div>
       )}
 

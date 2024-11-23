@@ -1,9 +1,12 @@
 import React from "react";
 import Footer from "./Footer";
 
+const levels = ["easy", "medium", "hard"] as const;
+type DifficultyLevel = (typeof levels)[number];
+
 interface StartScreenProps {
-  difficulty: "easy" | "medium" | "hard";
-  setDifficulty: (level: "easy" | "medium" | "hard") => void;
+  difficulty: DifficultyLevel;
+  setDifficulty: (level: DifficultyLevel) => void;
   startGame: () => void;
   highScore: number;
 }
@@ -21,7 +24,7 @@ const StartScreen: React.FC<StartScreenProps> = ({
     <div>
       <h2 className="text-xl md:text-2xl">Select Difficulty</h2>
       <div className="flex justify-center space-x-4 mt-2">
-        {(["easy", "medium", "hard"] as const).map((level) => (
+        {levels.map((level) => (
           <button
             key={level}
             className={`px-4 py-2 text-sm md:text-base rounded ${
