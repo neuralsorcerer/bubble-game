@@ -44,7 +44,7 @@ const App: React.FC = () => {
 
   const startGame = () => {
     setScore(0);
-    setTimer(difficulty === "easy" ? 60 : difficulty === "medium" ? 45 : 30);
+    setTimer(difficulty === "easy" ? 60 : difficulty === "medium" ? 30 : 10);
     setGameState("playing");
   };
 
