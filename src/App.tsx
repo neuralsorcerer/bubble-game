@@ -104,16 +104,21 @@ const App: React.FC = () => {
     setGameState("playing");
   };
 
-  const endGame = () => {
-    setGameState("gameover");
+  const updateHighScore = () => {
     if (score > highScore) {
       setHighScore(score);
       localStorage.setItem("highScore", score.toString());
     }
+  };
+
+  const endGame = () => {
+    updateHighScore();
+    setGameState("gameover");
     if (timerRef.current !== null) clearInterval(timerRef.current);
   };
 
   const exitGame = () => {
+    updateHighScore();
     setGameState("start");
     setScore(0);
     setIsDarkMode(false);
