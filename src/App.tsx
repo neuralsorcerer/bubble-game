@@ -36,7 +36,7 @@ const App: React.FC = () => {
   const generateBubbles = useCallback(
     (currentHitNumber: number) => {
       const bubbleCount =
-        difficulty === "easy" ? 100 : difficulty === "medium" ? 150 : 200;
+        difficulty === "easy" ? 50 : difficulty === "medium" ? 55 : 60;
 
       const maxNumber =
         difficulty === "easy" ? 10 : difficulty === "medium" ? 50 : 100;
