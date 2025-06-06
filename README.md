@@ -13,7 +13,8 @@ Welcome to Bubble Game! A fun and interactive game built with modern web technol
 - **Penalties:** Incorrect clicks deduct points, adding a challenge.
 - **Sound Effects:** Enjoy feedback with correct and incorrect sounds.
 - **High Score Tracking:** Your highest score is saved locally.
-- **Leaderboard:** Top scores are stored locally so you can track your progress.
+- **Leaderboard:** Your top 5 scores are stored locally so you can track your progress.
+- **Sound Toggle:** Easily mute or unmute the game's sound effects.
 - **User-Friendly Interface:** Clean design with intuitive controls.
 - **Separate Components:** Organized codebase with reusable components.
 
@@ -29,6 +30,7 @@ Welcome to Bubble Game! A fun and interactive game built with modern web technol
 6. **Controls During Game:**
    - **Exit Game:** Return to the home screen.
    - **Restart:** Start a new game with the current difficulty.
+   - **Sound Toggle:** Mute or unmute sound effects during gameplay.
 
 ## Installation
 

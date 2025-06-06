@@ -6,6 +6,8 @@ interface HeaderProps {
   score: number;
   exitGame: () => void;
   startGame: () => void;
+  toggleSound: () => void;
+  soundEnabled: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -14,6 +16,8 @@ const Header: React.FC<HeaderProps> = ({
   score,
   exitGame,
   startGame,
+  toggleSound,
+  soundEnabled,
 }) => {
   let bgColor = "#2F855A";
   let textColor = "#2F855A";
@@ -68,6 +72,13 @@ const Header: React.FC<HeaderProps> = ({
           onClick={exitGame}
         >
           Exit Game
+        </button>
+        <button
+          className="bg-white font-semibold text-sm md:text-base px-3 py-1 md:px-4 md:py-2 rounded hover:bg-gray-100 transition-colors duration-500 ease-in-out"
+          style={{ color: textColor }}
+          onClick={toggleSound}
+        >
+          {soundEnabled ? "Mute" : "Unmute"}
         </button>
         <button
           className="bg-white font-semibold text-sm md:text-base px-3 py-1 md:px-4 md:py-2 rounded hover:bg-gray-100 transition-colors duration-500 ease-in-out"

@@ -25,10 +25,20 @@ const App: React.FC = () => {
     leaderboard.length > 0 ? leaderboard[0] : 0
   );
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    const stored = localStorage.getItem("soundEnabled");
+    return stored ? JSON.parse(stored) : true;
+  });
   const timerRef = useRef<number | null>(null);
 
-  const [playCorrect] = useSound("/sounds/correct.mp3", { volume: 0.5 });
-  const [playIncorrect] = useSound("/sounds/incorrect.mp3", { volume: 0.5 });
+  const [playCorrect] = useSound("/sounds/correct.mp3", {
+    volume: 0.9,
+    soundEnabled,
+  });
+  const [playIncorrect] = useSound("/sounds/incorrect.mp3", {
+    volume: 0.9,
+    soundEnabled,
+  });
 
   const generateNewHit = useCallback(() => {
     const maxNumber =
@@ -100,6 +110,14 @@ const App: React.FC = () => {
     setIsDarkMode(false);
     setTimer(difficulty === "easy" ? 60 : difficulty === "medium" ? 30 : 10);
     setGameState("playing");
+  };
+
+  const toggleSound = () => {
+    setSoundEnabled((prev) => {
+      const updated = !prev;
+      localStorage.setItem("soundEnabled", JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const updateLeaderboard = useCallback((newScore: number) => {
@@ -190,6 +208,8 @@ const App: React.FC = () => {
             score={score}
             exitGame={exitGame}
             startGame={startGame}
+            toggleSound={toggleSound}
+            soundEnabled={soundEnabled}
           />
           <BubbleGrid
             bubbles={bubbles}
