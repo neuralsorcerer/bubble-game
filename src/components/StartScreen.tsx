@@ -1,7 +1,6 @@
 import React from "react";
 import Footer from "./Footer";
 import { BackgroundLines } from "./ui/background-lines";
-import Leaderboard from "./Leaderboard";
 
 const levels = ["easy", "medium", "hard"] as const;
 type DifficultyLevel = (typeof levels)[number];
@@ -19,7 +18,6 @@ const StartScreen: React.FC<StartScreenProps> = ({
   setDifficulty,
   startGame,
   highScore,
-  leaderboard,
 }) => (
   <BackgroundLines className="flex items-center justify-center w-full h-full flex-col px-4">
     <div className="flex flex-col items-center justify-center min-h-screen text-center space-y-6 px-4 z-50">
