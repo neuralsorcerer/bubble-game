@@ -4,10 +4,6 @@ Welcome to Bubble Game! A fun and interactive game built with modern web technol
 
 ![Homepage](.github/screenshots/homepage.png)
 
-## Demo
-
-[Live Demo Link](https://bubble.soumyadipsarkar.in/)
-
 ## Features
 
 - **Responsive Design:** Works seamlessly on all screen sizes.

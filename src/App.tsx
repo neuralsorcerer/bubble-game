@@ -86,12 +86,6 @@ const App: React.FC = () => {
   }, [gameState, generateNewHit, generateBubbles]);
 
   useEffect(() => {
-    if (timer === 0) {
-      endGame();
-    }
-  }, [timer]);
-
-  useEffect(() => {
     if (gameState === "playing" && score >= 2000 && !isDarkMode) {
       setIsDarkMode(true);
     }
@@ -104,18 +98,18 @@ const App: React.FC = () => {
     setGameState("playing");
   };
 
-  const updateHighScore = () => {
+  const updateHighScore = useCallback(() => {
     if (score > highScore) {
       setHighScore(score);
       localStorage.setItem("highScore", score.toString());
     }
-  };
+  }, [score, highScore]);
 
-  const endGame = () => {
+  const endGame = useCallback(() => {
     updateHighScore();
     setGameState("gameover");
     if (timerRef.current !== null) clearInterval(timerRef.current);
-  };
+  }, [updateHighScore]);
 
   const exitGame = () => {
     updateHighScore();
@@ -137,6 +131,12 @@ const App: React.FC = () => {
       });
     }, 1000);
   };
+
+  useEffect(() => {
+    if (timer === 0) {
+      endGame();
+    }
+  }, [timer, endGame]);
 
   const handleBubbleClick = (num: number) => {
     if (num === hitNumber) {
