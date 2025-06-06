@@ -1,15 +1,18 @@
 import React from "react";
 import Footer from "./Footer";
+import Leaderboard from "./Leaderboard";
 
 interface GameOverScreenProps {
   score: number;
   highScore: number;
+  leaderboard: number[];
   restartGame: () => void;
 }
 
 const GameOverScreen: React.FC<GameOverScreenProps> = ({
   score,
   highScore,
+  leaderboard,
   restartGame,
 }) => (
   <div className="flex flex-col items-center justify-center min-h-screen text-center space-y-6">
@@ -22,6 +25,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
     >
       Play Again
     </button>
+    <Leaderboard scores={leaderboard} />
     <Footer />
   </div>
 );

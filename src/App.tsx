@@ -17,8 +17,12 @@ const App: React.FC = () => {
   const [score, setScore] = useState<number>(0);
   const [hitNumber, setHitNumber] = useState<number>(0);
   const [bubbles, setBubbles] = useState<number[]>([]);
+  const [leaderboard, setLeaderboard] = useState<number[]>(() => {
+    const stored = localStorage.getItem("leaderboard");
+    return stored ? JSON.parse(stored) : [];
+  });
   const [highScore, setHighScore] = useState<number>(
-    parseInt(localStorage.getItem("highScore") || "0")
+    leaderboard.length > 0 ? leaderboard[0] : 0
   );
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const timerRef = useRef<number | null>(null);
@@ -98,21 +102,26 @@ const App: React.FC = () => {
     setGameState("playing");
   };
 
-  const updateHighScore = useCallback(() => {
-    if (score > highScore) {
-      setHighScore(score);
-      localStorage.setItem("highScore", score.toString());
-    }
-  }, [score, highScore]);
+  const updateLeaderboard = useCallback((newScore: number) => {
+    setLeaderboard((prev) => {
+      const updated = [...prev, newScore].sort((a, b) => b - a).slice(0, 5);
+      localStorage.setItem("leaderboard", JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  useEffect(() => {
+    setHighScore(leaderboard[0] ?? 0);
+  }, [leaderboard]);
 
   const endGame = useCallback(() => {
-    updateHighScore();
+    updateLeaderboard(score);
     setGameState("gameover");
     if (timerRef.current !== null) clearInterval(timerRef.current);
-  }, [updateHighScore]);
+  }, [updateLeaderboard, score]);
 
   const exitGame = () => {
-    updateHighScore();
+    updateLeaderboard(score);
     setGameState("start");
     setScore(0);
     setIsDarkMode(false);
@@ -165,6 +174,7 @@ const App: React.FC = () => {
           setDifficulty={setDifficulty}
           startGame={startGame}
           highScore={highScore}
+          leaderboard={leaderboard}
         />
       )}
 
@@ -193,6 +203,7 @@ const App: React.FC = () => {
         <GameOverScreen
           score={score}
           highScore={highScore}
+          leaderboard={leaderboard}
           restartGame={() => setGameState("start")}
         />
       )}
