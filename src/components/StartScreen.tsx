@@ -10,7 +10,6 @@ interface StartScreenProps {
   setDifficulty: (level: DifficultyLevel) => void;
   startGame: () => void;
   highScore: number;
-  leaderboard: number[];
 }
 
 const StartScreen: React.FC<StartScreenProps> = ({

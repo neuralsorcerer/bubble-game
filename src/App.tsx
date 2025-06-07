@@ -192,7 +192,6 @@ const App: React.FC = () => {
           setDifficulty={setDifficulty}
           startGame={startGame}
           highScore={highScore}
-          leaderboard={leaderboard}
         />
       )}
 
