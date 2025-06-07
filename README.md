@@ -2,8 +2,6 @@
 
 Welcome to Bubble Game! A fun and interactive game built with modern web technologies. Test your reflexes and number recognition skills by popping the right bubbles before time runs out!
 
-![Homepage](.github/screenshots/homepage.png)
-
 ## Features
 
 - **Responsive Design:** Works seamlessly on all screen sizes.
@@ -16,7 +14,6 @@ Welcome to Bubble Game! A fun and interactive game built with modern web technol
 - **Leaderboard:** Your top 5 scores are stored locally so you can track your progress.
 - **Sound Toggle:** Easily mute or unmute the game's sound effects.
 - **User-Friendly Interface:** Clean design with intuitive controls.
-- **Separate Components:** Organized codebase with reusable components.
 
 ## How to Play
 
@@ -36,20 +33,25 @@ Welcome to Bubble Game! A fun and interactive game built with modern web technol
 
 ### Prerequisites
 
-- Node.js (v12 or above)
+- Node.js (v18 or above)
 - npm (comes with Node.js)
 
 ### Steps
 
 1. Clone the Repository:
+
    ```bash
    git clone https://github.com/neuralsorcerer/bubble-game.git
    ```
+
 2. Navigate to the Project Directory:
+
    ```bash
    cd bubble-game
    ```
+
 3. Install Dependencies:
+
    ```bash
    npm install
    ```
