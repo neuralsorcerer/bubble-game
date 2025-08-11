@@ -1,0 +1,181 @@
+/**
+ * Bubble Game
+ * Copyright (c) 2025 Soumyadip Sarkar. All rights reserved.
+ * Licensed under the MIT License.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 10% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    /* Dynamic viewport height to avoid 100vh issues on mobile */
+    --vh: 1vh;
+  }
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html,
+  body,
+  #root {
+    height: calc(var(--vh) * 100);
+  }
+  body {
+    @apply bg-background text-foreground;
+    margin: 0;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right)
+      env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+}
+
+@layer utilities {
+  .auto-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+    gap: 0.5rem;
+  }
+  @media (min-width: 480px) {
+    .auto-grid {
+      grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+      gap: 0.5rem;
+    }
+  }
+  @media (min-width: 768px) {
+    .auto-grid {
+      grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
+      gap: 0.625rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .auto-grid {
+      grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+      gap: 0.75rem;
+    }
+  }
+}
+
+.confetti-container {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 50;
+}
+.confetti-piece {
+  position: absolute;
+  top: -10px;
+  border-radius: 2px;
+  --ty: -10px;
+  --rot: 0deg;
+  transform: translateY(var(--ty)) rotate(var(--base-rot, 0deg))
+    rotate(var(--rot));
+  will-change: transform;
+  animation-name: confetti-fall, confetti-tilt;
+  animation-timing-function: ease-in, linear;
+  animation-iteration-count: 1, infinite;
+}
+@keyframes confetti-fall {
+  0% {
+    --ty: -10px;
+    opacity: 1;
+  }
+  100% {
+    --ty: 110vh;
+    opacity: 1;
+  }
+}
+@keyframes confetti-tilt {
+  0%,
+  100% {
+    --rot: 0deg;
+  }
+  50% {
+    --rot: 180deg;
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(0.85);
+    opacity: 0.9;
+  }
+}
+
+.bubble-pop {
+  animation: pop 180ms ease-out;
+}
+
+button {
+  touch-action: manipulation;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
