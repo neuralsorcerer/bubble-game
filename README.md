@@ -1,4 +1,14 @@
-# Bubble Game
+<h1 align="center">
+Bubble Game
+</h1>
+
+<div align="center">
+
+[![Vite](https://img.shields.io/badge/Vite+React+TypeScript-purple?logo=vite&logoColor=white)](https://vite.dev/)
+[![Vercel Deploy](https://deploy-badge.vercel.app/vercel/reactions-demo?name=Production)](https://bubblegame.in/)
+[![License](https://img.shields.io/badge/License-MIT-3c60b1.svg?logo=opensourceinitiative&logoColor=white)](./LICENSE)
+
+</div>
 
 Bubble Game is a modern, interactive web game designed to challenge your reflexes and number recognition skills. Built with React, TypeScript, and Vite, it offers a fast, responsive, and engaging experience for players of all ages. Pop the correct bubbles before time runs out and climb the leaderboard!
 
