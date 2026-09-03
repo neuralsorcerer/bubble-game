@@ -1,6 +1,6 @@
 /**
  * Bubble Game
- * Copyright (c) 2025 Soumyadip Sarkar. All rights reserved.
+ * Copyright (c) Soumyadip Sarkar. All rights reserved.
  * Licensed under the MIT License.
  *
  * The ghost: your best run, replayed as a pace-setter you race in real time.
