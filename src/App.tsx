@@ -180,7 +180,7 @@ const App = () => {
   );
 
   const game = useBubbleGame({ difficulty, mode, onFinish: handleFinish });
-  const { start, reset, pop, togglePause, state } = game;
+  const { start, restart, reset, pop, togglePause, state } = game;
 
   const startGame = useCallback(() => {
     sfx.start();
@@ -208,11 +208,12 @@ const App = () => {
     });
   }, [sfx, start, activeChallenge, ghosts]);
 
-  /** Replays whatever kind of run just ended, daily boards included. */
+  /** Restarts the exact run, preserving daily seeds and run-specific modifiers. */
   const replay = useCallback(() => {
-    if (summary?.day) startDaily();
-    else startGame();
-  }, [summary, startDaily, startGame]);
+    sfx.start();
+    warmConfetti();
+    restart();
+  }, [sfx, restart]);
 
   const exitToMenu = useCallback(() => {
     reset(difficulty, mode);

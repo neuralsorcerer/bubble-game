@@ -316,6 +316,7 @@ interface Options {
 export const useBubbleGame = ({ difficulty, mode, onFinish }: Options) => {
   const [initialCore] = useState(() => makeCore(difficulty, mode));
   const coreRef = useRef<CoreState>(initialCore);
+  const lastStartRef = useRef<StartOptions>({ difficulty, mode });
   const [snapshot, setSnapshot] = useState<GameSnapshot>(() =>
     toSnapshot(initialCore)
   );
@@ -371,14 +372,16 @@ export const useBubbleGame = ({ difficulty, mode, onFinish }: Options) => {
   }, [publish]);
 
   const start = useCallback(
-    ({
-      difficulty: next,
-      mode: nextMode,
-      seed,
-      day,
-      math,
-      ghost,
-    }: StartOptions) => {
+    (options: StartOptions) => {
+      const {
+        difficulty: next,
+        mode: nextMode,
+        seed,
+        day,
+        math,
+        ghost,
+      } = options;
+      lastStartRef.current = options;
       const rng = seed === undefined ? Math.random : seededRng(seed);
       const core = makeCore(
         next,
@@ -405,6 +408,9 @@ export const useBubbleGame = ({ difficulty, mode, onFinish }: Options) => {
     },
     [publish]
   );
+
+  /** Rebuilds the current run from its original options, including daily seeds. */
+  const restart = useCallback(() => start(lastStartRef.current), [start]);
 
   const reset = useCallback(
     (nextDifficulty: Difficulty, nextMode: Mode) => {
@@ -525,6 +531,7 @@ export const useBubbleGame = ({ difficulty, mode, onFinish }: Options) => {
   return {
     state: snapshot,
     start,
+    restart,
     reset,
     pop,
     setPaused,
