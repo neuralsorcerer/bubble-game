@@ -6,6 +6,7 @@ Bubble Game
 
 [![Vite](https://img.shields.io/badge/Vite+React+TypeScript-purple?logo=vite&logoColor=white)](https://vite.dev/)
 [![Vercel Deploy](https://deploy-badge.vercel.app/vercel/reactions-demo?name=Production)](https://bubblegame.in/)
+[![Tests](https://github.com/neuralsorcerer/bubble-game/actions/workflows/test.yml/badge.svg)](https://github.com/neuralsorcerer/bubble-game/actions/workflows/test.yml?query=branch%3Amain)
 [![License](https://img.shields.io/badge/License-MIT-3c60b1.svg?logo=opensourceinitiative&logoColor=white)](./LICENSE)
 
 </div>
