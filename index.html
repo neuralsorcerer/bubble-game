@@ -13,31 +13,82 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>Bubble Game</title>
+    <meta name="theme-color" content="#eaf6ff" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Bubble" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <title>Bubble Game — Pop, Combo, Repeat</title>
     <meta
       name="description"
-      content="Play Bubble Game online! Pop bubbles, score points, and challenge your friends. Fun, fast, and addictive bubble popping game."
+      content="Pop the matching bubbles before the clock runs out. Chase combos, grab power-ups and climb your own leaderboard in this fast, cheerful reflex game."
     />
     <meta
       name="keywords"
-      content="bubble game, pop bubbles, online game, fun, addictive, score, challenge, puzzle"
+      content="bubble game, pop bubbles, online game, reflex game, combo, power-ups, number game, arcade, high score"
     />
     <meta name="author" content="Soumyadip Sarkar" />
-    <meta property="og:title" content="Bubble Game" />
+    <meta property="og:site_name" content="Bubble Game" />
+    <meta property="og:title" content="Bubble Game — Pop, Combo, Repeat" />
     <meta
       property="og:description"
-      content="Play Bubble Game online! Pop bubbles, score points, and challenge your friends. Fun, fast, and addictive bubble popping game."
+      content="Pop the matching bubbles before the clock runs out. Chase combos, grab power-ups, take on the daily challenge — or switch on Math mode."
     />
-    <meta property="og:image" content="/bubbles.svg" />
+    <!-- Crawlers need an absolute URL and a raster image; an SVG is ignored. -->
+    <meta property="og:image" content="https://bubblegame.in/og-card.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Bubble Game — colourful numbered bubbles beside the words Bubble Game and the address bubblegame.in"
+    />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://bubblegame.in/" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Bubble Game" />
+    <meta name="twitter:title" content="Bubble Game — Pop, Combo, Repeat" />
     <meta
       name="twitter:description"
-      content="Play Bubble Game online! Pop bubbles, score points, and challenge your friends."
+      content="Pop the matching bubbles before the clock runs out. Chase combos, grab power-ups — or switch on Math mode."
     />
-    <meta name="twitter:image" content="/bubbles.svg" />
+    <meta name="twitter:image" content="https://bubblegame.in/og-card.png" />
+    <meta
+      name="twitter:image:alt"
+      content="Bubble Game — colourful numbered bubbles beside the words Bubble Game and the address bubblegame.in"
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      // Paint the saved theme before first render so there is no flash.
+      (function () {
+        try {
+          var stored = localStorage.getItem("bubble:theme");
+          var dark =
+            stored === "dark" ||
+            (stored === null &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) {
+            document.documentElement.classList.add("dark");
+            document.documentElement.style.colorScheme = "dark";
+            document
+              .querySelector('meta[name="theme-color"]')
+              .setAttribute("content", "#0a1a38");
+          }
+        } catch (error) {
+          // Storage blocked — fall back to the light theme.
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

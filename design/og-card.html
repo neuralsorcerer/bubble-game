@@ -1,0 +1,247 @@
+<!--
+  Bubble Game — social share card (1200×630)
+  Copyright (c) 2025 Soumyadip Sarkar. All rights reserved.
+  Licensed under the MIT License.
+
+  Source for public/og-card.png. Open in a browser and screenshot the .card
+  element at 1200×630, or re-render headlessly, after editing.
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bubble Game — share card</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --navy: #0b2447;
+        --sky: #38bdf8;
+        --sky-deep: #0ea5e9;
+        --sun: #facc15;
+        --coral: #ff6b81;
+        --grass: #4ade80;
+        --grass-deep: #22c55e;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+
+      body {
+        background: #0a1a38;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        font-family: Fredoka, ui-rounded, system-ui, sans-serif;
+      }
+
+      .card {
+        position: relative;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        background: var(--navy);
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        padding: 62px 64px;
+      }
+
+      /* Soft colour clouds, kept faint so the type stays the loudest thing. */
+      .glow {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(90px);
+        opacity: 0.4;
+      }
+      .glow-a {
+        width: 620px;
+        height: 620px;
+        background: #0e7490;
+        top: -240px;
+        left: -180px;
+      }
+      .glow-b {
+        width: 560px;
+        height: 560px;
+        background: #9d174d;
+        bottom: -260px;
+        right: 40px;
+        opacity: 0.32;
+      }
+
+      .copy {
+        position: relative;
+        width: 640px;
+        flex: none;
+      }
+
+      .eyebrow {
+        display: inline-block;
+        padding: 8px 18px;
+        border-radius: 999px;
+        background: rgb(56 189 248 / 0.16);
+        color: var(--sky);
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 22px 0 0;
+        /* Sized to stay on one line: a wrap here collides with the tagline. */
+        font-size: 88px;
+        font-weight: 700;
+        line-height: 1.06;
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+      }
+      h1 .one {
+        color: var(--sky);
+      }
+      h1 .two {
+        color: var(--coral);
+      }
+
+      .tagline {
+        margin-top: 16px;
+        font-size: 28px;
+        font-weight: 600;
+        color: #a9c3e2;
+      }
+
+      .pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 30px;
+      }
+      .pill {
+        padding: 8px 16px;
+        border-radius: 999px;
+        border: 2px solid rgb(148 190 255 / 0.22);
+        color: #cfe3f8;
+        font-size: 18px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: 34px;
+        padding: 16px 30px;
+        border-radius: 999px;
+        background: var(--grass-deep);
+        border: 3px solid #15803d;
+        box-shadow: 0 7px 0 0 #15803d;
+        color: #fff;
+        font-size: 28px;
+        font-weight: 700;
+      }
+      .cta svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      /* The board art: the same flat bubbles the game itself draws. */
+      .art {
+        position: relative;
+        flex: 1;
+        height: 100%;
+      }
+
+      .bub {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: var(--navy);
+        font-weight: 700;
+        line-height: 1;
+      }
+      .bub::after {
+        content: "";
+        position: absolute;
+        left: 20%;
+        top: 12%;
+        width: 26%;
+        height: 20%;
+        border-radius: 50%;
+        background: rgb(255 255 255 / 0.62);
+        transform: rotate(-20deg);
+      }
+      .bub span {
+        position: relative;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="glow glow-a"></div>
+      <div class="glow glow-b"></div>
+
+      <div class="copy">
+        <span class="eyebrow">Reflex · Fun · Fast</span>
+        <h1><span class="one">Bubble</span> <span class="two">Game</span></h1>
+        <p class="tagline">Find the number. Pop it. Keep the combo alive.</p>
+        <div class="pills">
+          <span class="pill">Daily challenge</span>
+          <span class="pill">Math mode</span>
+          <span class="pill">5 power-ups</span>
+          <span class="pill">Plays offline</span>
+        </div>
+        <div class="cta">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          bubblegame.in
+        </div>
+      </div>
+
+      <div class="art" id="art"></div>
+    </div>
+
+    <script>
+      // Each bubble: x, y, size, fill, label, and whether the ink flips white.
+      const BUBBLES = [
+        { x: 24, y: 18, s: 150, fill: "#38bdf8", label: "12" },
+        { x: 196, y: -6, s: 116, fill: "#facc15", label: "7+5" },
+        { x: 330, y: 96, s: 132, fill: "#ff6b81", label: "9" },
+        { x: 34, y: 190, s: 128, fill: "#4ade80", label: "3×4" },
+        { x: 186, y: 132, s: 118, fill: "#0ea5e9", label: "25", light: true },
+        { x: 300, y: 250, s: 104, fill: "#facc15", label: "6" },
+        { x: 150, y: 274, s: 122, fill: "#ff6b81", label: "40−28" },
+        { x: 12, y: 340, s: 96, fill: "#22c55e", label: "8" },
+      ];
+
+      // Type shrinks as the label lengthens, exactly as it does in-game.
+      const scaleFor = (n) =>
+        n <= 1 ? 0.46 : n === 2 ? 0.4 : n === 3 ? 0.32 : n === 4 ? 0.26 : 0.22;
+
+      document.getElementById("art").innerHTML = BUBBLES.map((b) => {
+        const rim = Math.max(3, Math.round(b.s * 0.09));
+        const drop = Math.round(b.s * 0.06);
+        return `<div class="bub" style="
+          left:${b.x}px; top:${b.y}px; width:${b.s}px; height:${b.s}px;
+          background:${b.fill};
+          color:${b.light ? "#ffffff" : "#0b2447"};
+          font-size:${Math.round(b.s * scaleFor(b.label.length))}px;
+          box-shadow:
+            inset 0 -${rim}px 0 0 color-mix(in oklab, ${b.fill} 76%, #0b2447),
+            0 ${drop}px 0 0 color-mix(in oklab, ${b.fill} 55%, #0b2447);
+        "><span>${b.label}</span></div>`;
+      }).join("");
+    </script>
+  </body>
+</html>

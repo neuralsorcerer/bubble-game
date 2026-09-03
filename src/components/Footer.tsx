@@ -4,15 +4,14 @@
  * Licensed under the MIT License.
  */
 
-import React from "react";
-
-const Footer: React.FC = () => (
-  <footer className="fixed bottom-[max(theme(spacing.3),env(safe-area-inset-bottom))] left-0 right-0 flex justify-center">
-    <p className="text-xs md:text-sm text-gray-600 bg-white/60 backdrop-blur rounded-full px-3 py-1 border border-white/40 shadow-sm">
-      Built with ❤️ by{" "}
+const Footer = () => (
+  <footer className="mt-6 pb-2 text-center">
+    <p className="text-xs text-ink-faint md:text-sm">
+      Built with 💛 by{" "}
       <a
         href="https://soumyadipsarkar.com"
-        className="text-emerald-700 hover:underline"
+        // Padded to a comfortable tap target rather than a 14px sliver.
+        className="inline-block py-2 font-bold text-sky-deep underline-offset-4 hover:underline"
         rel="noopener noreferrer"
         target="_blank"
       >

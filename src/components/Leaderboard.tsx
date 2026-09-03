@@ -4,26 +4,69 @@
  * Licensed under the MIT License.
  */
 
-import React from "react";
+import { Crown } from "lucide-react";
+import { DIFFICULTIES, MODES } from "@/game/config";
+import type { ScoreEntry } from "@/game/types";
+import { cn } from "@/lib/utils";
+
+const MEDAL = ["#facc15", "#94a3b8", "#fb923c"];
+
+const describe = (entry: ScoreEntry) => {
+  const parts = [
+    entry.mode ? MODES[entry.mode].label : null,
+    entry.difficulty ? DIFFICULTIES[entry.difficulty].label : null,
+    entry.math ? "Math" : null,
+  ].filter(Boolean);
+  return parts.length > 0 ? parts.join(" · ") : "Earlier run";
+};
 
 interface LeaderboardProps {
-  scores: number[];
+  entries: ScoreEntry[];
+  /** Timestamp of the run that just ended, so it can be picked out. */
+  highlight?: number;
 }
 
-const Leaderboard: React.FC<LeaderboardProps> = ({ scores }) => (
+const Leaderboard = ({ entries, highlight }: LeaderboardProps) => (
   <div className="mt-6 text-left">
-    <h3 className="text-lg md:text-xl font-semibold text-emerald-700 mb-2">
-      Your Top 5 Scores
+    <h3 className="mb-2 flex items-center gap-2 font-display text-base font-bold text-ink">
+      <Crown size={17} className="text-sun-deep" strokeWidth={2.8} />
+      Your top 5
     </h3>
-    {scores.length === 0 ? (
-      <p className="text-sm md:text-base text-gray-600">No scores yet</p>
+
+    {entries.length === 0 ? (
+      <p className="rounded-2xl border-2 border-hairline bg-panel-sunk px-4 py-3 text-sm text-ink-faint">
+        No scores yet — this run will start the board.
+      </p>
     ) : (
-      <ol className="list-decimal list-inside text-sm md:text-base text-gray-700 space-y-1">
-        {scores.map((score, index) => (
-          <li key={index} className="font-medium">
-            {score}
-          </li>
-        ))}
+      <ol className="space-y-1.5">
+        {entries.slice(0, 5).map((entry, index) => {
+          const isCurrent = highlight !== undefined && entry.at === highlight;
+          return (
+            <li
+              key={`${entry.at}-${index}`}
+              className={cn(
+                "flex items-center gap-3 rounded-2xl px-3.5 py-2 transition-colors",
+                isCurrent
+                  ? "border-2 border-sky bg-sky/20"
+                  : "border-2 border-hairline bg-panel-sunk"
+              )}
+            >
+              <span
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-display text-xs font-bold text-navy"
+                style={{ background: MEDAL[index] ?? "var(--hairline)" }}
+              >
+                {index + 1}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-xs font-bold text-ink-faint">
+                {describe(entry)}
+                {entry.streak > 0 && ` · ×${entry.streak} streak`}
+              </span>
+              <span className="font-display text-base font-bold tabular-nums text-ink">
+                {entry.score.toLocaleString()}
+              </span>
+            </li>
+          );
+        })}
       </ol>
     )}
   </div>

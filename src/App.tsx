@@ -4,360 +4,359 @@
  * Licensed under the MIT License.
  */
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import useSound from "use-sound";
-import StartScreen from "./components/StartScreen";
-import GameOverScreen from "./components/GameOverScreen";
-import Header from "./components/Header";
-import BubbleGrid from "./components/BubbleGrid";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
-import Confetti from "./components/Confetti";
+import { domAnimation, LazyMotion, MotionConfig } from "motion/react";
+import { newlyEarned } from "@/game/achievements";
+import { URGENT_SECONDS } from "@/game/config";
+import { challengeFor } from "@/game/daily";
+import { betterGhost, ghostKey } from "@/game/ghost";
+import { dayKey } from "@/game/rng";
+import type {
+  AchievementId,
+  Bubble,
+  Difficulty,
+  Mode,
+  ScoreEntry,
+} from "@/game/types";
+import { useBubbleGame, type RunSummary } from "@/game/useBubbleGame";
+import { useSfx } from "@/hooks/useSfx";
+import { useTheme } from "@/hooks/useTheme";
+import { useViewportHeight } from "@/hooks/useViewportHeight";
+import { cheer, finale, sparkleAt, warmConfetti } from "@/lib/celebrate";
+import {
+  bestFor,
+  bestScore,
+  loadBadges,
+  loadDaily,
+  loadDifficulty,
+  loadGhosts,
+  loadHaptics,
+  loadMath,
+  loadMode,
+  loadScores,
+  loadSound,
+  loadTotals,
+  recordDaily,
+  resetProgress as clearSavedProgress,
+  saveBadges,
+  saveDifficulty,
+  saveGhosts,
+  saveHaptics,
+  saveMath,
+  saveMode,
+  saveScore,
+  saveSound,
+  saveTotals,
+  type DailyRecord,
+  type GhostStore,
+  type Totals,
+} from "@/lib/storage";
+import { BubbleBackdrop } from "@/components/BubbleBackdrop";
+import { GameOverScreen } from "@/components/GameOverScreen";
+import { GameScreen } from "@/components/GameScreen";
+import { SettingsSheet } from "@/components/SettingsSheet";
+import { StartScreen } from "@/components/StartScreen";
+import { StatsSheet } from "@/components/StatsSheet";
+import { TopControls } from "@/components/TopControls";
 
-const App: React.FC = () => {
+const App = () => {
+  useViewportHeight();
+  const { theme, toggleTheme } = useTheme();
+
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(loadSound);
+  const [hapticsEnabled, setHapticsEnabled] = useState<boolean>(loadHaptics);
+  const [difficulty, setDifficulty] = useState<Difficulty>(loadDifficulty);
+  const [mode, setMode] = useState<Mode>(loadMode);
+  const [math, setMath] = useState<boolean>(loadMath);
+  const [entries, setEntries] = useState<ScoreEntry[]>(loadScores);
+  const [totals, setTotals] = useState<Totals>(loadTotals);
+  const [daily, setDaily] = useState<DailyRecord>(loadDaily);
+  const [badges, setBadges] = useState<AchievementId[]>(loadBadges);
+  const [ghosts, setGhosts] = useState<GhostStore>(loadGhosts);
+
+  const [summary, setSummary] = useState<RunSummary | null>(null);
+  const [finishedAt, setFinishedAt] = useState(0);
+  const [wasBest, setWasBest] = useState(false);
+  const [freshBadges, setFreshBadges] = useState<AchievementId[]>([]);
+
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const sfx = useSfx(soundEnabled, hapticsEnabled);
+
+  // Today's challenge, refreshed if the session is left open past midnight.
+  const [today, setToday] = useState(() => dayKey());
+  const challenge = useMemo(() => challengeFor(new Date()), []);
+  const activeChallenge = useMemo(
+    () => (today === challenge.day ? challenge : challengeFor(new Date())),
+    [today, challenge]
+  );
+
   useEffect(() => {
-    const setVh = () => {
-      if (typeof window === "undefined") return;
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty("--vh", `${vh}px`);
-    };
-    setVh();
-    window.addEventListener("resize", setVh);
-    window.addEventListener("orientationchange", setVh);
-    return () => {
-      window.removeEventListener("resize", setVh);
-      window.removeEventListener("orientationchange", setVh);
-    };
+    const id = window.setInterval(() => setToday(dayKey()), 60_000);
+    return () => window.clearInterval(id);
   }, []);
 
-  const [gameState, setGameState] = useState<"start" | "playing" | "gameover">(
-    "start"
-  );
-  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">(
-    () => {
-      const stored =
-        typeof window !== "undefined"
-          ? localStorage.getItem("difficulty")
-          : null;
-      if (stored === "easy" || stored === "medium" || stored === "hard")
-        return stored;
-      return "easy";
-    }
-  );
-  const [timer, setTimer] = useState<number>(60);
-  const [score, setScore] = useState<number>(0);
-  const [hitNumber, setHitNumber] = useState<number>(0);
-  const [bubbles, setBubbles] = useState<number[]>([]);
-  const [leaderboard, setLeaderboard] = useState<number[]>(() => {
-    const stored = localStorage.getItem("leaderboard");
-    return stored ? JSON.parse(stored) : [];
-  });
-  const [highScore, setHighScore] = useState<number>(
-    leaderboard.length > 0 ? leaderboard[0] : 0
-  );
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
-    const stored = localStorage.getItem("soundEnabled");
-    return stored ? JSON.parse(stored) : true;
-  });
-  const timerRef = useRef<number | null>(null);
-  const confettiTimeoutRef = useRef<number | null>(null);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [streak, setStreak] = useState<number>(0);
-
-  const [playCorrect] = useSound("/sounds/correct.mp3", {
-    volume: 0.9,
-    soundEnabled,
-  });
-  const [playIncorrect] = useSound("/sounds/incorrect.mp3", {
-    volume: 0.9,
-    soundEnabled,
-  });
-
+  // Latest values for callbacks that must stay referentially stable.
+  const stateRef = useRef({ entries, totals, daily, badges, ghosts });
   useEffect(() => {
-    try {
-      localStorage.setItem("difficulty", difficulty);
-    } catch {
-      // ignore persistence errors
-    }
-  }, [difficulty]);
+    stateRef.current = { entries, totals, daily, badges, ghosts };
+  }, [entries, totals, daily, badges, ghosts]);
 
-  const getTimerCap = useCallback(() => {
-    return difficulty === "easy" ? 90 : difficulty === "medium" ? 60 : 30;
-  }, [difficulty]);
-  const clampTime = useCallback(
-    (t: number) => Math.max(0, Math.min(t, getTimerCap())),
-    [getTimerCap]
-  );
-  const getMultiplier = (s: number) => Math.min(1 + Math.floor(s / 5), 5);
-  const getBasePoints = useCallback(() => {
-    return difficulty === "easy" ? 10 : difficulty === "medium" ? 12 : 15;
-  }, [difficulty]);
+  useEffect(() => saveDifficulty(difficulty), [difficulty]);
+  useEffect(() => saveMode(mode), [mode]);
+  useEffect(() => saveSound(soundEnabled), [soundEnabled]);
+  useEffect(() => saveHaptics(hapticsEnabled), [hapticsEnabled]);
+  useEffect(() => saveMath(math), [math]);
 
-  const vibrate = (pattern: number | number[]) => {
-    if (typeof window !== "undefined" && "vibrate" in navigator) {
-      try {
-        navigator.vibrate(pattern);
-      } catch {
-        // ignore
-      }
-    }
-  };
+  const handleFinish = useCallback(
+    (run: RunSummary) => {
+      const at = Date.now();
+      const current = stateRef.current;
+      const isBest = run.score > bestScore(current.entries);
 
-  const generateNewHit = useCallback(() => {
-    const maxNumber =
-      difficulty === "easy" ? 10 : difficulty === "medium" ? 50 : 100;
-    let newHitNumber = Math.floor(Math.random() * maxNumber) + 1;
-    if (maxNumber > 1) {
-      while (newHitNumber === hitNumber) {
-        newHitNumber = Math.floor(Math.random() * maxNumber) + 1;
-      }
-    }
-    setHitNumber(newHitNumber);
-    return newHitNumber;
-  }, [difficulty, hitNumber]);
+      const entry: ScoreEntry = {
+        score: run.score,
+        difficulty: run.difficulty,
+        mode: run.mode,
+        level: run.level,
+        streak: run.bestStreak,
+        math: run.math,
+        at,
+      };
+      setEntries(saveScore(entry, current.entries));
 
-  const generateBubbles = useCallback(
-    (currentHitNumber: number) => {
-      const bubbleCount =
-        difficulty === "easy" ? 50 : difficulty === "medium" ? 55 : 60;
+      const nextTotals: Totals = {
+        games: current.totals.games + 1,
+        pops: current.totals.pops + run.pops,
+        bestStreak: Math.max(current.totals.bestStreak, run.bestStreak),
+      };
+      setTotals(nextTotals);
+      saveTotals(nextTotals);
 
-      const maxNumber =
-        difficulty === "easy" ? 10 : difficulty === "medium" ? 50 : 100;
+      // A daily run extends the streak; everything else leaves it alone.
+      const nextDaily = run.day
+        ? recordDaily(current.daily, run.day, run.score)
+        : current.daily;
+      if (run.day) setDaily(nextDaily);
 
-      const basePct =
-        difficulty === "easy" ? 0.2 : difficulty === "medium" ? 0.1 : 0.05;
-      const reduction = Math.min(
-        basePct * 0.75,
-        Math.floor(score / 100) * 0.02
+      const unlocked = newlyEarned(
+        {
+          ...run,
+          totals: nextTotals,
+          dailyStreak: nextDaily.streak,
+        },
+        current.badges
       );
-      const hitNumberPercentage = Math.max(0.04, basePct - reduction);
-
-      const hitNumberCount = Math.max(
-        1,
-        Math.floor(bubbleCount * hitNumberPercentage)
-      );
-
-      const hitNumbersArray = Array(hitNumberCount).fill(currentHitNumber);
-
-      const remainingCount = bubbleCount - hitNumberCount;
-
-      const remainingNumbers = Array.from({ length: remainingCount }, () => {
-        let num;
-        do {
-          num = Math.floor(Math.random() * maxNumber) + 1;
-        } while (num === currentHitNumber);
-        return num;
-      });
-
-      const combinedArray = [...hitNumbersArray, ...remainingNumbers];
-
-      for (let i = combinedArray.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [combinedArray[i], combinedArray[j]] = [
-          combinedArray[j],
-          combinedArray[i],
-        ];
+      if (unlocked.length > 0) {
+        const nextBadges = [...current.badges, ...unlocked];
+        setBadges(nextBadges);
+        saveBadges(nextBadges);
       }
 
-      setBubbles(combinedArray);
+      // The run only becomes the new ghost if it actually beat the old one.
+      const key = ghostKey(run.mode, run.difficulty, run.math);
+      const promoted = betterGhost(
+        current.ghosts[key],
+        run.score,
+        run.trace
+      );
+      if (promoted) {
+        const nextGhosts = { ...current.ghosts, [key]: promoted };
+        setGhosts(nextGhosts);
+        saveGhosts(nextGhosts);
+      }
+
+      setSummary(run);
+      setFinishedAt(at);
+      setWasBest(isBest);
+      setFreshBadges(unlocked);
+
+      sfx.gameOver();
+      finale(isBest || unlocked.length > 0);
     },
-    [difficulty, score]
+    [sfx]
   );
 
-  useEffect(() => {
-    return () => {
-      if (timerRef.current !== null) clearInterval(timerRef.current);
-      if (confettiTimeoutRef.current !== null)
-        window.clearTimeout(confettiTimeoutRef.current);
-    };
+  const game = useBubbleGame({ difficulty, mode, onFinish: handleFinish });
+  const { start, reset, pop, togglePause, state } = game;
+
+  const startGame = useCallback(() => {
+    sfx.start();
+    warmConfetti();
+    start({
+      difficulty,
+      mode,
+      math,
+      ghost: ghosts[ghostKey(mode, difficulty, math)],
+    });
+  }, [sfx, start, difficulty, mode, math, ghosts]);
+
+  const startDaily = useCallback(() => {
+    sfx.start();
+    warmConfetti();
+    start({
+      difficulty: activeChallenge.difficulty,
+      mode: "daily",
+      seed: activeChallenge.seed,
+      day: activeChallenge.day,
+      math: activeChallenge.math,
+      ghost: ghosts[
+        ghostKey("daily", activeChallenge.difficulty, activeChallenge.math)
+      ],
+    });
+  }, [sfx, start, activeChallenge, ghosts]);
+
+  /** Replays whatever kind of run just ended, daily boards included. */
+  const replay = useCallback(() => {
+    if (summary?.day) startDaily();
+    else startGame();
+  }, [summary, startDaily, startGame]);
+
+  const exitToMenu = useCallback(() => {
+    reset(difficulty, mode);
+    setSummary(null);
+    setFreshBadges([]);
+  }, [reset, difficulty, mode]);
+
+  const resetProgress = useCallback(() => {
+    clearSavedProgress();
+    setEntries([]);
+    setTotals({ games: 0, pops: 0, bestStreak: 0 });
+    setDaily({ day: "", score: 0, streak: 0, bestStreak: 0 });
+    setBadges([]);
+    setGhosts({});
+    setSummary(null);
+    setFreshBadges([]);
   }, []);
 
-  useEffect(() => {
-    const onVis = () => {
-      if (document.hidden) {
-        if (timerRef.current !== null) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
-      } else {
-        if (gameState === "playing" && timer > 0 && timerRef.current === null) {
-          startTimer();
+  /** Every tap goes through here so sound and confetti stay off the game logic. */
+  const handlePop = useCallback(
+    (bubble: Bubble) => {
+      const result = pop(bubble);
+
+      if (result.tone === "hit") sfx.hit(result.multiplier);
+      else if (result.tone === "miss" && result.label) sfx.miss();
+      else if (result.tone === "power") {
+        if (result.power === "freeze") sfx.freeze();
+        else sfx.power();
+        if (result.power === "star" || result.power === "nova") {
+          sparkleAt(0.5, 0.45);
         }
       }
-    };
-    document.addEventListener("visibilitychange", onVis);
-    return () => document.removeEventListener("visibilitychange", onVis);
-  }, [gameState, timer]);
 
-  const startTimer = () => {
-    if (timerRef.current !== null) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    timerRef.current = window.setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          if (timerRef.current !== null) clearInterval(timerRef.current);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
+      if (result.leveledUp) {
+        sfx.levelUp();
+        cheer();
+      }
 
-  const startGame = () => {
-    if (timerRef.current !== null) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    if (confettiTimeoutRef.current !== null) {
-      window.clearTimeout(confettiTimeoutRef.current);
-      confettiTimeoutRef.current = null;
-    }
-    setShowConfetti(false);
-    setScore(0);
-    setStreak(0);
-    const initial =
-      difficulty === "easy" ? 60 : difficulty === "medium" ? 30 : 10;
-    setTimer(initial);
-    const newHit = generateNewHit();
-    generateBubbles(newHit);
-    setGameState("playing");
-    startTimer();
-    vibrate(20);
-  };
+      return result;
+    },
+    [pop, sfx]
+  );
 
-  const toggleSound = () => {
-    setSoundEnabled((prev) => {
-      const updated = !prev;
-      localStorage.setItem("soundEnabled", JSON.stringify(updated));
-      return updated;
-    });
-  };
-
-  const updateLeaderboard = useCallback((newScore: number) => {
-    setLeaderboard((prev) => {
-      const updated = [...prev, newScore].sort((a, b) => b - a).slice(0, 5);
-      localStorage.setItem("leaderboard", JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
-
+  // Heartbeat tick over the final seconds.
+  const wholeSeconds = Math.ceil(state.secondsLeft);
+  const playing = state.phase === "playing";
   useEffect(() => {
-    setHighScore(leaderboard[0] ?? 0);
-  }, [leaderboard]);
-
-  const endGame = useCallback(() => {
-    updateLeaderboard(score);
-    setGameState("gameover");
-    if (timerRef.current !== null) clearInterval(timerRef.current);
-    setShowConfetti(true);
-    vibrate([0, 80, 40, 80, 40, 80]);
-    confettiTimeoutRef.current = window.setTimeout(() => {
-      setShowConfetti(false);
-    }, 2800);
-  }, [updateLeaderboard, score]);
-
-  const exitGame = () => {
-    updateLeaderboard(score);
-    setGameState("start");
-    setScore(0);
-    setStreak(0);
-    if (timerRef.current !== null) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+    if (playing && wholeSeconds > 0 && wholeSeconds <= URGENT_SECONDS) {
+      sfx.tick();
     }
-    if (confettiTimeoutRef.current !== null) {
-      window.clearTimeout(confettiTimeoutRef.current);
-      confettiTimeoutRef.current = null;
-    }
-    setShowConfetti(false);
-  };
+  }, [wholeSeconds, playing, sfx]);
 
-  useEffect(() => {
-    if (timer === 0 && gameState === "playing") {
-      endGame();
-    }
-  }, [timer, endGame, gameState]);
-
-  const handleBubbleClick = (num: number) => {
-    if (num === hitNumber) {
-      playCorrect();
-      vibrate(30);
-      const newStreak = streak + 1;
-      setStreak(newStreak);
-      const multiplier = getMultiplier(newStreak);
-      const basePoints = getBasePoints();
-      setScore((prevScore) => prevScore + basePoints * multiplier);
-      setTimer((prev) => clampTime(prev + 2));
-      const newHitNumber = generateNewHit();
-      generateBubbles(newHitNumber);
-    } else {
-      playIncorrect();
-      vibrate([0, 60, 40, 60]);
-      setStreak(0);
-      setScore((prev) => (prev >= 5 ? prev - 5 : 0));
-      setTimer((prev) => clampTime(prev - 1));
-      generateBubbles(hitNumber);
-    }
-  };
+  const overall = bestScore(entries);
+  const onMenu = state.phase === "idle" || state.phase === "over";
 
   return (
-    <div
-      className={`relative flex items-center justify-center min-h-[calc(var(--vh)*100)] bg-emerald-50`}
-    >
-      {gameState === "start" && (
-        <StartScreen
-          difficulty={difficulty}
-          setDifficulty={setDifficulty}
-          startGame={startGame}
-          highScore={highScore}
-        />
-      )}
+    // `strict` keeps the heavyweight `motion.*` components out of the bundle;
+    // only the `m.*` ones the game actually uses are loaded.
+    <LazyMotion features={domAnimation} strict>
+      <MotionConfig reducedMotion="user">
+        <div className="relative min-h-[calc(var(--vh)*100)] w-full">
+          <BubbleBackdrop />
 
-      {gameState === "playing" && (
-        <div
-          className={`w-full sm:w-11/12 md:w-4/5 lg:max-w-5xl h-full sm:h-[calc(var(--vh)*90)] rounded-none sm:rounded-2xl overflow-hidden flex flex-col min-h-0 border bg-white/70 border-white/30 backdrop-blur`}
-        >
-          <Header
-            hitNumber={hitNumber}
-            timer={timer}
-            score={score}
-            exitGame={exitGame}
-            startGame={startGame}
-            toggleSound={toggleSound}
+          <main className="relative z-10 flex min-h-[calc(var(--vh)*100)] w-full items-center justify-center">
+            {state.phase === "idle" && (
+              <StartScreen
+                difficulty={difficulty}
+                mode={mode}
+                best={bestFor(entries, difficulty, mode, math)}
+                bestOverall={overall}
+                totals={totals}
+                challenge={activeChallenge}
+                daily={daily}
+                badgeCount={badges.length}
+                math={math}
+                onDifficulty={setDifficulty}
+                onMode={setMode}
+                onMath={setMath}
+                onPlay={startGame}
+                onPlayDaily={startDaily}
+              />
+            )}
+
+            {(state.phase === "playing" || state.phase === "paused") && (
+              <GameScreen
+                state={state}
+                soundEnabled={soundEnabled}
+                onPop={handlePop}
+                onToggleSound={() => setSoundEnabled((on) => !on)}
+                onTogglePause={togglePause}
+                onRestart={replay}
+                onExit={exitToMenu}
+              />
+            )}
+
+            {state.phase === "over" && summary && (
+              <GameOverScreen
+                summary={summary}
+                entries={entries}
+                highlight={finishedAt}
+                isBest={wasBest}
+                bestOverall={overall}
+                earnedBadges={freshBadges}
+                dailyStreak={daily.streak}
+                onReplay={replay}
+                onMenu={exitToMenu}
+              />
+            )}
+          </main>
+
+          {onMenu && (
+            <TopControls
+              soundEnabled={soundEnabled}
+              onToggleSound={() => setSoundEnabled((on) => !on)}
+              onOpenStats={() => setStatsOpen(true)}
+              onOpenSettings={() => setSettingsOpen(true)}
+            />
+          )}
+
+          <StatsSheet
+            open={statsOpen}
+            onClose={() => setStatsOpen(false)}
+            entries={entries}
+            totals={totals}
+            daily={daily}
+            badges={badges}
+          />
+
+          <SettingsSheet
+            open={settingsOpen}
+            onClose={() => setSettingsOpen(false)}
             soundEnabled={soundEnabled}
-            streak={streak}
-            multiplier={getMultiplier(streak)}
+            onToggleSound={() => setSoundEnabled((on) => !on)}
+            hapticsEnabled={hapticsEnabled}
+            onToggleHaptics={() => setHapticsEnabled((on) => !on)}
+            theme={theme}
+            onToggleTheme={toggleTheme}
+            onReset={resetProgress}
           />
-          <BubbleGrid
-            bubbles={bubbles}
-            handleBubbleClick={handleBubbleClick}
-            score={score}
-          />
+
+          <Analytics />
         </div>
-      )}
-
-      {gameState === "gameover" && (
-        <GameOverScreen
-          score={score}
-          highScore={highScore}
-          leaderboard={leaderboard}
-          restartGame={startGame}
-          goToStart={() => {
-            if (confettiTimeoutRef.current !== null) {
-              window.clearTimeout(confettiTimeoutRef.current);
-              confettiTimeoutRef.current = null;
-            }
-            setShowConfetti(false);
-            setScore(0);
-            setGameState("start");
-          }}
-        />
-      )}
-
-      <Confetti show={showConfetti} />
-      <Analytics />
-    </div>
+      </MotionConfig>
+    </LazyMotion>
   );
 };
 
